@@ -131,7 +131,7 @@ function getRandomCard(): Card {
   const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
   const suit = suits[Math.floor(Math.random() * suits.length)]
   const rank = ranks[Math.floor(Math.random() * ranks.length)]
-  const image = `/cards/${rank}_of_${suit}.png` // adjust path as needed
+  const image = `${import.meta.env.BASE_URL}cards/${rank}_of_${suit}.png`
   return { suit, rank, image }
 }
 
@@ -173,7 +173,7 @@ function App() {
           <h2 style={{ color: 'white' }}>Dealer</h2>
           <div>
             <img src={dealerCards[0]?.image} alt="Dealer card 1" style={{ width: 80 }} />
-            <img src="/cards/back.png" alt="Dealer card 2" style={{ width: 80 }} />
+            <img src={`${import.meta.env.BASE_URL}cards/back.png`} alt="Dealer card 2" style={{ width: 80 }} />
           </div>
         </div>
         <div className="player-hand" style={{ marginTop: 40 }}>
