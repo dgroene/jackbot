@@ -147,7 +147,10 @@ function App() {
   }, [])
 
   function dealNewHand() {
-    const player = [getRandomCard(), getRandomCard()]
+    let player = [getRandomCard(), getRandomCard()]
+    while (handTotal(player) >= 21) {
+      player = [getRandomCard(), getRandomCard()]
+    }
     const dealer = [getRandomCard(), getRandomCard()]
     setPlayerCards(player)
     setDealerCards(dealer)
