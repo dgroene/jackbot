@@ -52,8 +52,8 @@ const hardChart: { [playerTotal: number]: ('hit' | 'stick' | 'double')[] } = {
 
 const softChart: { [playerTotal: number]: ('hit' | 'stick' | 'double')[] } = {
   20: ['stick','stick','stick','stick','stick','stick','stick','stick','stick','stick','stick'],
-  19: ['stick','double','double','double','double','stick','stick','stick','stick','stick','stick'],
-  18: ['double','double','double','double','double','stick','stick','hit','hit','hit','hit'],
+  19: ['stick','stick','stick','stick','stick','stick','stick','stick','stick','stick','stick'],
+  18: ['stick','double','double','double','double','stick','stick','hit','hit','hit','hit'],
   17: ['hit','double','double','double','double','hit','hit','hit','hit','hit','hit'],
   16: ['hit','hit','double','double','double','hit','hit','hit','hit','hit','hit'],
   15: ['hit','hit','double','double','double','hit','hit','hit','hit','hit','hit'],
@@ -102,23 +102,16 @@ function getBestMove(player: Card[], dealer: Card): 'hit' | 'stick' | 'double' |
     }
   }
   if (isSoft && total >= 13 && total <= 20) {
-    // Use softChart
-    const move = softChart[total]?.[dealerIdx]
-    if (move === 'double') {
-      // Only double if two cards, else hit
-      if (player.length === 2) return 'double'
-      else return 'hit'
-    }
-    return move ?? 'hit'
+    const move = softChart[total]?.[dealerIdx] ?? 'hit'
+    // Disallow doubling once you have more than two cards
+    if (move === 'double' && player.length > 2) return 'hit'
+    return move
   }
   if (!isSoft && total >= 5 && total <= 17) {
-    // Use hardChart
-    const move = hardChart[total]?.[dealerIdx]
-    if (move === 'double') {
-      if (player.length === 2) return 'double'
-      else return 'hit'
-    }
-    return move ?? (total >= 17 ? 'stick' : 'hit')
+    const move = hardChart[total]?.[dealerIdx] ?? (total >= 17 ? 'stick' : 'hit')
+    // Treat any double suggestion as hit for hands larger than two cards
+    if (move === 'double' && player.length > 2) return 'hit'
+    return move
   }
   // For totals > 17, always stick
   if (total > 17) return 'stick'
@@ -147,9 +140,11 @@ function App() {
   }, [])
 
   function dealNewHand() {
-    let player = [getRandomCard(), getRandomCard()]
+    // Randomly deal 2, 3, or 4 cards, ensuring total is less than 21
+    const numCards = Math.floor(Math.random() * 3) + 2  // yields 2, 3, or 4
+    let player = Array.from({ length: numCards }, () => getRandomCard())
     while (handTotal(player) >= 21) {
-      player = [getRandomCard(), getRandomCard()]
+      player = Array.from({ length: numCards }, () => getRandomCard())
     }
     const dealer = [getRandomCard(), getRandomCard()]
     setPlayerCards(player)
@@ -199,7 +194,11 @@ function App() {
       </div>
       <div className="controls" style={{ width: 200, background: '#f2f2f2', color: '#000', padding: '20px' }}>
         <h3>Choose your move</h3>
-        {['hit', 'stick', 'double', 'split'].map((action) => (
+        {[
+          'hit',
+          'stick',
+          ...(playerCards.length === 2 ? ['double', 'split'] : []),
+        ].map((action) => (
           <button
             key={action}
             onClick={() => handleChoice(action as any)}
